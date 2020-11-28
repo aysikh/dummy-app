@@ -13,6 +13,8 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Collapse } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import ArrowForwardOutlinedIcon from '@material-ui/icons/ArrowForwardOutlined';
 
 
 function Copyright() {
@@ -52,9 +54,65 @@ function Copyright() {
     },
   }));
 
-export default function LogInForm({checked}) {
+export default function LogInForm({checked}, props) {
     const classes = useStyles();
  
+    const [email, setEmail]=useState("")
+    const [password, setPassword]=useState("")
+    const [errors, setErrors]=useState("")
+
+    
+  useEffect(()=> {
+    return props.loggedInStatus ? redirect() : null
+  }, [])
+
+  const handleEmailChange = (event) => {
+      setEmail(event.target.value)
+  };
+
+  const handlePasswordChange = (event) => {
+      setPassword(event.target.value)
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    const {username, email, password} = this.state
+    let user = {
+          name: name,
+          email: email,
+          password: password
+        }
+        
+    axios.post('http://localhost:3001/login', {user}, {withCredentials: true})
+        .then(response => {
+          if (response.data.logged_in) {
+            props.handleLogin(response.data)
+            redirect()
+          } else {
+            setState({
+              errors: response.data.errors
+            })
+          }
+        })
+        .catch(error => console.log('api errors:', error))
+      };
+
+    const redirect = () => {
+        props.history.push('/')
+      }
+
+    const handleErrors = () => {
+        return (
+          <div>
+            <ul>
+            {errors.map(error => {
+            return <li key={error}>{error}</li>
+              })}
+            </ul>
+          </div>
+        )
+      }
+
     return (
     <Collapse in={checked} {...(checked ? { timeout: 1000 } : {})}>
         <Grid container component="main" className={classes.grid} >
@@ -77,6 +135,7 @@ export default function LogInForm({checked}) {
                     label="Email Address"
                     name="email"
                     autoComplete="email"
+                    onChange={handleEmailChange}
                 />
                 <TextField
                     variant="outlined"
@@ -88,6 +147,7 @@ export default function LogInForm({checked}) {
                     type="password"
                     id="password"
                     autoComplete="current-password"
+                    onChange={handlePasswordChange}
                 />
                 <FormControlLabel
                     control={<Checkbox value="remember" color="primary" />}
@@ -114,6 +174,11 @@ export default function LogInForm({checked}) {
                     <Copyright />
                 </Box>
                 </form>
+                <div>
+                    {
+                        errors ? handleErrors() : null
+                    }
+                </div>
             </div>
             </Grid>
         </Grid>
